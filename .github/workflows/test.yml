@@ -32,7 +32,8 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           cargo build --release
-          ln -sf **/eza .
+
+      - run: find . -name 'eza'
 
       - name: Populate current directory
         run: |
