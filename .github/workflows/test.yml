@@ -7,13 +7,32 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+       os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Download `eza` v0.23.0
-        run: curl --location --output eza.tar.gz https://github.com/eza-community/eza/releases/download/v0.23.0/eza_x86_64-unknown-linux-gnu.tar.gz
+      - name: Download and extract `eza` v0.23.0
+        if: runner.os == 'Linux'
+        run: |
+          curl --location --output eza.tar.gz https://github.com/eza-community/eza/releases/download/v0.23.0/eza_x86_64-unknown-linux-gnu.tar.gz
+          tar xf eza.tar.gz
 
-      - name: Extract `eza`
-        run: tar xf eza.tar.gz
+      - name: Install rust
+        if: runner.os == 'macOS'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Clone `eza` repo
+        if: runner.os == 'macOS'
+        uses: actions/checkout@main
+        with:
+          repository: 'eza-community/eza'
+
+      - name: Build `eza`
+        if: runner.os == 'macOS'
+        run: |
+          cargo build --release
+          ln -sf **/eza .
 
       - name: Populate current directory
         run: |
